@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: log-app
+  namespace: PUT_NAMESPACE_HERE
+  labels:
+    app: log-app
+spec:
+  containers:
+  - name: log-app
+    image: PUT_APP_IMAGE_HERE
+    ports:
+    - containerPort: 10000
+    env:
+      - name: LOGGING_FILE
+        value: "/mnt/log/server.log"
+    volumeMounts:
+    - name: log-storage
+      mountPath: /mnt/log
+  - name: sidecar-log-collector
+    image: PUT_FLUENTBIT_IMAGE_LINK_HERE
+    env:
+      - name:  LOGGING_ELASTICSEARCH_HOST
+        value: "PUT_ELASTICSEARCH_HOST_HERE"
+      - name:  LOGGING_ELASTICSEARCH_PORT
+        value: "PUT_ELASTICSERACH_PORT_HERE"
+      - name:  LOGGING_ELASTICSEARCH_INDEX
+        value: "test-log"
+      - name: LOGGING_FILE
+        value: "/mnt/log/server.log"
+    resources:
+      limits:
+        cpu: 100m
+        memory: 200Mi
+    volumeMounts:
+    - name: log-storage
+      readOnly: true
+      mountPath: /mnt/log
+  volumes:
+  - name: log-storage
+    emptyDir: {}
